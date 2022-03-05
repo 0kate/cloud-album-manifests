@@ -1,0 +1,14 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+- ./pvc.yaml
+- ./pipelines/backend-pipeline.yaml
+- ./pipelines/frontend-pipeline.yaml
+- ./tasks/kustomize-manifests.yaml
+- ./tasks/sync-app.yaml
+- ./secrets/ghcr-cred.yaml
+- ./triggers/event-listener.yaml
+- ./triggers/backend-pipeline-trigger.yaml
+- ./triggers/frontend-pipeline-trigger.yaml
+- ./triggers/serviceaccount.yaml
+- ./triggers/role.yaml

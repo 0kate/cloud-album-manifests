@@ -1,0 +1,17 @@
+apiVersion: tekton.dev/v1beta1
+kind: PipelineRun
+metadata:
+  generateName: frontend-pipeline-run-
+spec:
+  serviceAccountName: redeployer
+  pipelineRef:
+    name: frontend-pipeline
+  params:
+    - name: repo-url
+      value: https://github.com/0kate/cloud-album-web.git
+    - name: commitid
+      value: latest
+  workspaces:
+    - name: shared-data
+      persistentVolumeClaim:
+        claimName: cloud-album-pipeline

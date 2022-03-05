@@ -1,0 +1,46 @@
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: frontend-pipeline
+spec:
+  params:
+     - name: repo-url
+       type: string
+     - name: commitid
+       type: string
+  workspaces:
+    - name: shared-data
+  tasks:
+    - name: clone-repository
+      taskRef:
+        name: git-clone
+      params:
+        - name: url
+          value: $(params.repo-url)
+      workspaces:
+        - name: output
+          workspace: shared-data
+    - name: kustomize-manifests
+      runAfter:
+        - clone-repository
+      taskRef:
+        name: kustomize-manifests
+      params:
+        - name: context
+          value: k8s
+        - name: image-with-tag
+          value: ghcr.io/0kate/cloud-album-web:$(params.commitid)
+      workspaces:
+        - name: source
+          workspace: shared-data
+    - name: sync-app
+      runAfter:
+        - kustomize-manifests
+      taskRef:
+        name: sync-app
+      params:
+        - name: context
+          value: k8s
+      workspaces:
+        - name: source
+          workspace: shared-data

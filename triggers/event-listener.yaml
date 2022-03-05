@@ -1,0 +1,43 @@
+apiVersion: triggers.tekton.dev/v1alpha1
+kind: EventListener
+metadata:
+  name: cloud-album-el
+spec:
+  serviceAccountName: event-listener
+  triggers:
+    - name: backend-pipeline-listener
+      interceptors:
+        - name: 'validate repository'
+          ref:
+            name: cel
+          params:
+            - name: filter
+              value: 'body.repository.name == "cloud-album-api"'
+        - name: 'validate github action status'
+          ref:
+            name: cel
+          params:
+            - name: filter
+              value: 'body.action == "completed"'
+      bindings:
+        - ref: backend-pipeline-trigger-binding
+      template:
+        ref: backend-pipeline-trigger-template
+    - name: frontend-pipeline-listener
+      interceptors:
+        - name: 'validate repository'
+          ref:
+            name: cel
+          params:
+            - name: filter
+              value: 'body.repository.name == "cloud-album-web"'
+        - name: 'validate github action status'
+          ref:
+            name: cel
+          params:
+            - name: filter
+              value: 'body.action == "completed"'
+      bindings:
+        - ref: frontend-pipeline-trigger-binding
+      template:
+        ref: frontend-pipeline-trigger-template

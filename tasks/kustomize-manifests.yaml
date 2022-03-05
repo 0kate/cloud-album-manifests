@@ -1,0 +1,28 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: kustomize-manifests
+spec:
+  params:
+    - name: context
+      type: string
+      default: ''
+    - name: image-with-tag
+      type: string
+    - name: output
+      type: string
+      default: manifests.yaml
+  workspaces:
+    - name: source
+  steps:
+    - name: kustomize-manifests
+      image: alpine
+      script: |
+        #!/bin/sh
+        set -e
+        cd /tmp
+        wget https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize%2Fv4.5.2/kustomize_v4.5.2_linux_arm64.tar.gz
+        tar xzvf ./kustomize_v4.5.2_linux_arm64.tar.gz
+        cd $(workspaces.source.path)/$(params.context)
+        /tmp/kustomize edit set image $(params.image-with-tag)
+        /tmp/kustomize build > ./manifests.yaml

@@ -1,0 +1,39 @@
+apiVersion: triggers.tekton.dev/v1alpha1
+kind: TriggerBinding
+metadata:
+  name: backend-pipeline-trigger-binding
+spec:
+  params:
+    - name: gitrepositoryurl
+      value: $(body.repository.html_url)
+    - name: commitid
+      value: $(body.workflow_run.head_sha)
+---
+apiVersion: triggers.tekton.dev/v1beta1
+kind: TriggerTemplate
+metadata:
+  name: backend-pipeline-trigger-template
+spec:
+  params:
+  - name: gitrepositoryurl
+    description: The git repo url
+  - name: commitid
+    description: The git revision
+  resourcetemplates:
+  - apiVersion: tekton.dev/v1beta1
+    kind: PipelineRun
+    metadata:
+      generateName: backend-pipeline-run-
+    spec:
+      serviceAccountName: redeployer
+      pipelineRef:
+        name: backend-pipeline
+      params:
+      - name: repo-url
+        value: $(tt.params.gitrepositoryurl)
+      - name: commitid
+        value: $(tt.params.commitid)
+      workspaces:
+      - name: shared-data
+        persistentVolumeClaim:
+          claimName: cloud-album-pipeline

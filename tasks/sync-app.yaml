@@ -1,0 +1,23 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: sync-app
+spec:
+  params:
+    - name: context
+      type: string
+      default: ''
+  workspaces:
+    - name: source
+  steps:
+    - name: kustomize-manifests
+      image: alpine
+      script: |
+        #!/bin/sh
+        set -e
+        apk --update add curl
+        cd /tmp
+        curl -LO "https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/arm/kubectl"
+        chmod +x ./kubectl
+        cd $(workspaces.source.path)/$(params.context)
+        /tmp/kubectl apply -f ./manifests.yaml
